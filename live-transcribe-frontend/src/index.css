@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Segoe UI", system-ui, sans-serif;
+  --color-chat-bg: #f7f7f8;
+  --color-user-bubble: #0d9488;
+  --color-assistant-bubble: #e5e7eb;
+  --color-primary: #0d9488;
+  --color-primary-hover: #0f766e;
+}
+
+html {
+  scroll-behavior: smooth;
+}
