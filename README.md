@@ -1,4 +1,4 @@
-# Tamil → English Chat Assistant
+# voice chat Chat Assistant
 
 Full-stack app: React frontend + Django backend in one repo.
 
