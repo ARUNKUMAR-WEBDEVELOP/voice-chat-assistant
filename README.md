@@ -12,8 +12,8 @@ live-transcribe-backend/    # Django + REST API
 ## API key (for AI chat)
 
 1. In `live-transcribe-backend`, copy `.env.example` to `.env`
-2. Get key from https://platform.openai.com/api-keys
-3. Add to `.env`: `OPENAI_API_KEY=sk-your-key`
+2. Get key from (https://aistudio.google.com/app/api-keys)
+3. Add to `.env`: `GEMINI API=gemini_API_key`
 4. Restart the backend
 
 ## Run the site (both frontend + backend)
