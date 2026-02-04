@@ -40,6 +40,6 @@ Backend runs at **http://localhost:8000**
 - Chat API: `POST /api/chat` with `{ "messages": [...] }`
 - Translate API: `POST /api/translate` with `{ "text": "..." }`
 
-## Optional: OpenAI
+## Optional: gemini API
 
 Set `gemini IP key` in `.env` for real AI chat responses.
