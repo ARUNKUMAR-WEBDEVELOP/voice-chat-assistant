@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_URL || "/api";
+const API_BASE = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
 
 /**
  * Mock response when backend is not configured (for local testing).
@@ -21,7 +21,7 @@ function getMockResponse(messages) {
  */
 export async function sendChatMessage(messages) {
   try {
-    const res = await axios.post(`${API_BASE}/chat`, {
+    const res = await axios.post(`${API_BASE}/chat/`, {
       messages,
     }, { timeout: 15000 });
     return res.data?.content ?? res.data?.message ?? "No response.";
@@ -33,7 +33,8 @@ export async function sendChatMessage(messages) {
       return "Cannot reach backend. Is it running on port 8000? Start: cd live-transcribe-backend && python manage.py runserver";
     }
     if (err.response?.status >= 500) {
-      return err.response?.data?.error || "Backend error. Check backend terminal.";
+      const errMsg = err.response?.data?.error || err.response?.data?.detail;
+      return errMsg || "Backend error (500). Check backend terminal for details.";
     }
     if (err.response?.data?.message) {
       return err.response.data.message;
@@ -48,7 +49,7 @@ export async function sendChatMessage(messages) {
 export async function translateTamilToEnglish(text) {
   if (!text?.trim()) return text;
   try {
-    const res = await axios.post(`${API_BASE}/translate`, {
+    const res = await axios.post(`${API_BASE}/translate/`, {
       text,
       from: "ta",
       to: "en",

@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { sendChatMessage, translateTamilToEnglish } from "../services/chatApi";
+import { sendChatMessage } from "../services/chatApi";
 
 export function useChat() {
   const [messages, setMessages] = useState([]);
@@ -37,14 +37,6 @@ export function useChat() {
     }
   }, [messages, isLoading, addMessage]);
 
-  const sendWithTranslation = useCallback(
-    async (tamilText) => {
-      const translated = await translateTamilToEnglish(tamilText);
-      await sendMessage(translated);
-    },
-    [sendMessage]
-  );
-
   const clearChat = useCallback(() => {
     setMessages([]);
     setError(null);
@@ -55,7 +47,6 @@ export function useChat() {
     isLoading,
     error,
     sendMessage,
-    sendWithTranslation,
     addMessage,
     clearChat,
   };

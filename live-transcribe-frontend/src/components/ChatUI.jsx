@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Mic, Send, Square, Loader2 } from "lucide-react";
-import { useSpeechRecognition } from "../hooks/useSpeechRecognition";
+import { useSTT } from "../hooks/useSTT";
 import { useChat } from "../hooks/useChat";
 
 function ChatUI() {
@@ -8,22 +8,23 @@ function ChatUI() {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  const {
-    isListening,
-    transcript,
-    isSupported: speechSupported,
-    error: speechError,
-    startListening,
-    stopListening,
-    setTranscript,
-  } = useSpeechRecognition();
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const speechSupported = true;
+  const speechError = null;
+  
+  const { start, stop } = useSTT((finalText) => {
+    setTranscript(finalText);
+    setInputText(finalText);
+    setIsListening(false);
+  });
+  
 
   const {
     messages,
     isLoading,
     error: chatError,
     sendMessage,
-    sendWithTranslation,
     clearChat,
   } = useChat();
 
@@ -33,33 +34,33 @@ function ChatUI() {
   useEffect(() => scrollToBottom(), [messages, transcript]);
 
   useEffect(() => {
-    if (transcript) setInputText(transcript);
-  }, [transcript, setTranscript]);
+    if (transcript && isListening) setInputText(transcript);
+  }, [transcript, isListening]);
 
   const handleSend = async (overrideText) => {
-    const text = (overrideText ?? inputText).trim();
+    // Check if overrideText is a string, otherwise use inputText
+    const inputSource = typeof overrideText === "string" ? overrideText : inputText;
+    const text = (inputSource || "").trim();
+
     if (!text || isLoading) return;
 
     setInputText("");
     setTranscript("");
-
-    const useTranslation = /[\u0B80-\u0BFF]/.test(text);
-    if (useTranslation) {
-      await sendWithTranslation(text);
-    } else {
-      await sendMessage(text);
-    }
+    await sendMessage(text);
   };
 
   const handleVoiceToggle = () => {
     if (isListening) {
-      stopListening();
-      if (transcript.trim()) handleSend(transcript);
+      stop();
+      setIsListening(false);
     } else {
+      setTranscript("");
       setInputText("");
-      startListening();
+      setIsListening(true);
+      start();
     }
   };
+  
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -73,7 +74,7 @@ function ChatUI() {
   return (
     <div className="flex flex-col h-[calc(100vh-2rem)] max-h-[800px] bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200/60">
       {/* Header */}
-      <header className="flex items-center justify-between px-5 py-4 bg-gray-200 from-teal-600 to-teal-700 text-white shrink-0">
+      <header className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-teal-600 to-teal-700 text-white shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm">
             T
@@ -106,7 +107,7 @@ function ChatUI() {
             </div>
             <p className="font-medium text-gray-600">Start a conversation</p>
             <p className="text-sm mt-1">
-              Tap the mic to speak in Tamil, or type your message below
+              Tap mic to speak • AI understands Tamil, English, mixed
             </p>
           </div>
         )}
@@ -158,13 +159,13 @@ function ChatUI() {
           <div className="flex-1 min-w-0 rounded-2xl border border-gray-200 bg-gray-50 focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/20 transition-all">
             <textarea
               ref={inputRef}
-              value={displayText}
+              value={isListening ? transcript : inputText}
               onChange={(e) => !isListening && setInputText(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={
                 isListening
-                  ? "Listening… speak in Tamil"
-                  : "Type or speak in Tamil…"
+                  ? "Listening… speak now"
+                  : "Type or tap mic to speak"
               }
               rows={1}
               disabled={isLoading}
@@ -175,7 +176,7 @@ function ChatUI() {
           <button
             onClick={handleVoiceToggle}
             disabled={!speechSupported || isLoading}
-            title={speechSupported ? "Voice input (Tamil)" : "Speech not supported"}
+            title={speechSupported ? "Tap to speak (any language)" : "Use Chrome/Edge"}
             className={`shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-white transition-all ${
               isListening
                 ? "bg-red-500 hover:bg-red-600 animate-pulse"
@@ -188,7 +189,6 @@ function ChatUI() {
               <Mic className="w-5 h-5" />
             )}
           </button>
-
           <button
             onClick={handleSend}
             disabled={(!inputText.trim() && !transcript.trim()) || isLoading}
