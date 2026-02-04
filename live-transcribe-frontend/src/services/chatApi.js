@@ -26,10 +26,18 @@ export async function sendChatMessage(messages) {
     }, { timeout: 15000 });
     return res.data?.content ?? res.data?.message ?? "No response.";
   } catch (err) {
-    if (err.code === "ERR_NETWORK" || err.response?.status >= 500) {
-      return getMockResponse(messages);
+    if (err.response?.data?.content) {
+      return err.response.data.content;
     }
-    if (err.response?.data?.message) throw new Error(err.response.data.message);
+    if (err.code === "ERR_NETWORK") {
+      return "Cannot reach backend. Is it running on port 8000? Start: cd live-transcribe-backend && python manage.py runserver";
+    }
+    if (err.response?.status >= 500) {
+      return err.response?.data?.error || "Backend error. Check backend terminal.";
+    }
+    if (err.response?.data?.message) {
+      return err.response.data.message;
+    }
     return getMockResponse(messages);
   }
 }

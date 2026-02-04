@@ -4,11 +4,10 @@ Django settings for Tamil → English Chat Backend
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+from dotenv import load_dotenv
+load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-secret-key-change-in-production")
 
@@ -81,6 +80,12 @@ USE_TZ = True
 STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# REST framework - no auth for API
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [],
+    "DEFAULT_PERMISSION_CLASSES": [],
+}
+
 # CORS - allow frontend (Vite dev server typically on 5173)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
@@ -88,5 +93,5 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 
-# Optional: API keys for OpenAI/Claude (add when you integrate)
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+# AI: Gemini only (free at aistudio.google.com/app/apikey)
+GEMINI_API_KEY = (os.environ.get("GEMINI_API_KEY", "") or "").strip()
